@@ -1,0 +1,32 @@
+{
+    "name": "oof-bar/craft-activity",
+    "description": "A simple analytics solution for your Craft application.",
+    "type": "craft-plugin",
+    "keywords": ["craftcms", "plugin", "analytics"],
+    "license": "Craft",
+    "authors": [
+        {
+            "name": "oof. Studio",
+            "homepage": "https://oof.studio"
+        }
+    ],
+    "support": {
+        "email": "hello@oof.studio",
+        "issues": "https://github.com/oof-bar/craft-activity/issues?state=open",
+        "source": "https://github.com/oof-bar/craft-activity",
+        "docs": "https://github.com/oof-bar/craft-activity/blob/main/README.md"
+    },
+    "require": {
+        "craftcms/cms": "^3.7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "oofbar\\activity\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Activity",
+        "handle": "activity",
+        "class": "oofbar\\activity\\Activity"
+    }
+}
