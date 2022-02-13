@@ -3,7 +3,6 @@ namespace oofbar\activity;
 
 use Craft;
 use craft\base\Plugin;
-use craft\i18n\PhpMessageSource;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\web\View;
 
@@ -19,22 +18,6 @@ use oofbar\activity\twig\ActivityExtension;
  */
 class Activity extends Plugin
 {
-    /**
-     * @inheritdoc
-     */
-    public function __construct($id, $parent = null, array $config = [])
-    {
-        Craft::$app->getI18n()->translations[$id] = [
-            'class' => PhpMessageSource::class,
-            'sourceLanguage' => 'en-US',
-            'basePath' => '@activity/translations',
-            'forceTranslation' => true,
-            'allowOverrides' => true,
-        ];
-
-        parent::__construct($id, $parent, $config);
-    }
-
     /**
      * @inheritdoc
      */
