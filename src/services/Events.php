@@ -5,13 +5,13 @@ namespace oofbar\activity\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\helpers\Db;
-
+use craft\web\View;
 use oofbar\activity\events\TrackEvent;
 use oofbar\activity\models\Event;
 use oofbar\activity\records\Event as EventRecord;
+use oofbar\activity\web\assets\xhr\XhrAsset;
 
 class Events extends Component
 {
@@ -33,12 +33,12 @@ class Events extends Component
     /**
      * Executes a count query on Events for the provided Element and category.
      * 
-     * @param ElementInterface $element
+     * @param Element $element
      * @param string $category
      * @param \DateTime $edge How far back in time to collect.
      * @return array
      */
-    public function getElementEventsTotal(ElementInterface $element, string $category, \DateTime $edge = null): int
+    public function getElementEventsTotal(Element $element, string $category, \DateTime $edge = null): int
     {
         $q = (new Query)
             ->select(['value'])
@@ -54,23 +54,6 @@ class Events extends Component
         }
 
         return $q->sum('value') ?? 0;
-    }
-
-    /**
-     * Creates a token that can be consumed or redeemed by a client, within a defined window of time.
-     * 
-     * @param array $options An array of Event attributes that will hydrate a model before being tracked. Passing an entire Element object under the `element` key is *strongly* discouraged, as serialization and deserialization may result in a significant performance hit or inconsistencies! Use `elementId` whenever possible.
-     * @return string Token
-     */
-    public function trackAsync(array $options, string $duration = self::DEFAULT_TOKEN_DURATION): string
-    {
-        $expiry = (new \DateTime)->add(new \DateInterval($duration));
-
-        return Craft::$app->getTokens()->createToken(
-            ['activity/events/track', ['config' => $options]],
-            1,
-            $expiry
-        );
     }
 
     /**
@@ -115,6 +98,41 @@ class Events extends Component
         ]));
 
         return $event;
+    }
+
+    /**
+     * Creates a token that can be consumed or redeemed by a client, within a defined window of time. This is only useful to other internal methods, developers who want precise control over the timing of the eventual track (i.e. in response to a specific client-side interaction), or when the XHR tracker is non-viable.
+     * 
+     * @param array $options An array of Event attributes that will hydrate a model before being tracked. Passing an entire Element object under the `element` key is *strongly* discouraged, as serialization and deserialization may result in a significant performance hit or inconsistencies! Use `elementId` whenever possible.
+     * @return string Token
+     */
+    public function trackAsync(array $options, string $duration = self::DEFAULT_TOKEN_DURATION): string
+    {
+        $expiry = (new \DateTime)->add(new \DateInterval($duration));
+
+        return Craft::$app->getTokens()->createToken(
+            ['activity/events/track', ['config' => $options]],
+            1,
+            $expiry
+        );
+    }
+
+    /**
+     * Creates a token and registers a tiny XHR script to redeem it from the client.
+     * 
+     * @param array $options
+     */
+    public function trackXhr(array $options): void
+    {
+        $view = Craft::$app->getView();
+
+        $token = $this->trackAsync($options);
+        $script = $view->renderTemplate('activity/_script/track-event', [
+            'token' => $token,
+        ]);
+
+        $view->registerAssetBundle(XhrAsset::class, View::POS_HEAD);
+        $view->registerScript($script);
     }
 
     /**

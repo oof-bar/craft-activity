@@ -1,4 +1,5 @@
 <?php
+
 namespace oofbar\activity\controllers;
 
 use Craft;

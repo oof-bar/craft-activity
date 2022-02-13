@@ -4,6 +4,10 @@ namespace oofbar\activity;
 use Craft;
 use craft\base\Plugin;
 use craft\i18n\PhpMessageSource;
+use craft\events\RegisterTemplateRootsEvent;
+use craft\web\View;
+
+use yii\base\Event;
 
 use oofbar\activity\services\Events;
 use oofbar\activity\twig\ActivityExtension;
@@ -43,6 +47,24 @@ class Activity extends Plugin
         $this->setComponents([
             'events' => Events::class,
         ]);
+
+        // Set the controller namespace based on the type of request:
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsConsoleRequest()) {
+            $this->controllerNamespace = 'oofbar\\activity\\controllers\\console';
+        } else if ($request->getIsCpRequest()) {
+            $this->controllerNamespace = 'oofbar\\activity\\controllers\\cp';
+        } else {
+            $this->controllerNamespace = 'oofbar\\activity\\controllers\\site';
+        }
+
+        Event::on(
+            View::class,
+            View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS,
+            function (RegisterTemplateRootsEvent $e) {
+                $e->roots[$this->id] = Craft::getAlias('@activity/templates');
+            });
 
         Craft::$app->getView()->registerTwigExtension(new ActivityExtension);
     }

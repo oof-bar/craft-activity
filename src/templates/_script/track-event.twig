@@ -1,0 +1,9 @@
+(function () {
+    var e = new CustomEvent('activity:track', {
+        detail: {
+            token: '{{ token }}',
+        },
+    });
+
+    document.dispatchEvent(e);
+})();

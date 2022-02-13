@@ -27,6 +27,7 @@ class ActivityExtension extends AbstractExtension
         return [
             new TwigFunction('track', [Activity::getInstance()->getEvents(), 'track']),
             new TwigFunction('trackAsync', [Activity::getInstance()->getEvents(), 'trackAsync']),
+            new TwigFunction('trackXhr', [Activity::getInstance()->getEvents(), 'trackXhr']),
         ];
     }
 }
