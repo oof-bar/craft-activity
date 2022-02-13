@@ -1,10 +1,4 @@
 (function () {
-    if (typeof window.fetch === 'undefined') {
-        console.warning('Fetch was unavailable when trying to track an event.');
-
-        return;
-    }
-
     var queue = [];
     var idle = function () {
         // Nothing to do? Check back in a moment:
