@@ -1,5 +1,6 @@
 (function () {
     var queue = [];
+
     var idle = function () {
         // Nothing to do? Check back in a moment:
         if (queue.length === 0) {
