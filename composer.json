@@ -1,5 +1,5 @@
 {
-    "name": "oof-bar/craft-activity",
+    "name": "oofbar/craft-activity",
     "description": "A simple analytics solution for your Craft application.",
     "type": "craft-plugin",
     "keywords": ["craftcms", "plugin", "analytics"],
