@@ -3,13 +3,18 @@ namespace oofbar\activity;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\services\Dashboard;
 use craft\web\View;
 
 use yii\base\Event;
 
 use oofbar\activity\services\Events;
+use oofbar\activity\services\Reports;
+use oofbar\activity\services\Seed;
 use oofbar\activity\twig\ActivityExtension;
+use oofbar\activity\widgets\Chart;
 
 /**
  * Base Activity plugin class.
@@ -29,6 +34,8 @@ class Activity extends Plugin
 
         $this->setComponents([
             'events' => Events::class,
+            'reports' => Reports::class,
+            'seed' => Seed::class,
         ]);
 
         // Set the controller namespace based on the type of request:
@@ -42,6 +49,19 @@ class Activity extends Plugin
             $this->controllerNamespace = 'oofbar\\activity\\controllers\\site';
         }
 
+        $view = Craft::$app->getView();
+
+        $view->registerTwigExtension(new ActivityExtension);
+
+        // Element Edit View Hooks
+        $elementEditHandler = [$this->getReports(), 'renderElementActivity'];
+
+        $view->hook('cp.assets.edit.content', $elementEditHandler);
+        $view->hook('cp.categories.edit.content', $elementEditHandler);
+        $view->hook('cp.entries.edit.content', $elementEditHandler);
+        $view->hook('cp.globals.edit.content', $elementEditHandler);
+        $view->hook('cp.users.edit.content', $elementEditHandler);
+
         Event::on(
             View::class,
             View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS,
@@ -49,7 +69,12 @@ class Activity extends Plugin
                 $e->roots[$this->id] = Craft::getAlias('@activity/templates');
             });
 
-        Craft::$app->getView()->registerTwigExtension(new ActivityExtension);
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function (RegisterComponentTypesEvent $e) {
+                $e->types[] = Chart::class;
+            });
     }
 
     /**
@@ -60,5 +85,25 @@ class Activity extends Plugin
     public function getEvents(): Events
     {
         return $this->get('events');
+    }
+
+    /**
+     * Returns the Reports service/component.
+     * 
+     * @return Reports
+     */
+    public function getReports(): Reports
+    {
+        return $this->get('reports');
+    }
+
+    /**
+     * Returns the Seed service/component.
+     * 
+     * @return Seed
+     */
+    public function getSeed(): Seed
+    {
+        return $this->get('seed');
     }
 }

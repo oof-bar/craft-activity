@@ -4,10 +4,10 @@ namespace oofbar\activity\services;
 
 use Craft;
 use craft\base\Component;
-use craft\base\Element;
 use craft\db\Query;
-use craft\helpers\Db;
+use craft\db\Table;
 use craft\web\View;
+
 use oofbar\activity\events\TrackEvent;
 use oofbar\activity\models\Event;
 use oofbar\activity\records\Event as EventRecord;
@@ -29,32 +29,6 @@ class Events extends Component
      * @var string Interval expression for the length of time a tracking token will be valid for.
      */
     const DEFAULT_TOKEN_DURATION = 'PT1H';
-
-    /**
-     * Executes a count query on Events for the provided Element and category.
-     * 
-     * @param Element $element
-     * @param string $category
-     * @param \DateTime $edge How far back in time to collect.
-     * @return array
-     */
-    public function getElementEventsTotal(Element $element, string $category, \DateTime $edge = null): int
-    {
-        $q = (new Query)
-            ->select(['value'])
-            ->from([EventRecord::tableName()])
-            ->where([
-                'elementId' => $element->id,
-                'category' => $category,
-            ]);
-
-        // Apply the edge, if provided:
-        if (!is_null($edge)) {
-            $q->andWhere(Db::parseDateParam('dateCreated', $edge, '>='));
-        }
-
-        return $q->sum('value') ?? 0;
-    }
 
     /**
      * Builds an analytics event with the provided data.
@@ -159,5 +133,15 @@ class Events extends Component
         $event->uid = $record->uid;
 
         return true;
+    }
+
+    /**
+     * Returns a stubbed Query instance, ready to filter + fetch records from the Events table.
+     */
+    public function getQuery(): Query
+    {
+        return (new Query)
+            ->from([EventRecord::tableName()])
+            ->leftJoin(Table::ELEMENTS, '[[activity_events.elementId]] = [[elements.id]]');
     }
 }

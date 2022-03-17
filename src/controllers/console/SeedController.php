@@ -3,6 +3,15 @@
 namespace oofbar\activity\controllers\console;
 
 use craft\console\Controller;
+use craft\base\Element;
+use craft\db\Query;
+use craft\db\Table;
+use craft\helpers\Console;
+use craft\helpers\Db;
+use oofbar\activity\Activity;
+use yii\console\ExitCode;
+
+use oofbar\activity\records\Event as EventRecord;
 
 /**
  * Utilies to assist with seeding test events.
@@ -10,29 +19,19 @@ use craft\console\Controller;
 class SeedController extends Controller
 {
     /**
-     * @var string Fully-qualified Element type to populate Events on.
+     * @var int Number of events to create.
      */
-    public $elementType;
-
-    /**
-     * @var int Number of Events to create.
-     */
-    public $count;
-
-    /**
-     * @var \DateTime Earliest date to create Events.
-     */
-    public $after;
-
-    /**
-     * @var \DateTime Latest date to create Events.
-     */
-    public $before;
+    public $num = 100;
 
     /**
      * @var string Event "category" to use.
      */
-    public $category;
+    public $category = 'seeded-event';
+
+    /**
+     * @var string Interval expression defining the earliest relative date an Event will be generated for.
+     */
+    public $within;
 
     /**
      * @inheritdoc
@@ -41,10 +40,11 @@ class SeedController extends Controller
     {
         $options = parent::options($actionId);
 
-        $options[] = 'elementType';
-        $options[] = 'count';
-        $options[] = 'after';
-        $options[] = 'before';
+        $options[] = 'num';
+        $options[] = 'category';
+        $options[] = 'within';
+
+        return $options;
     }
 
     /**
@@ -53,17 +53,29 @@ class SeedController extends Controller
      * @param 
      */
     public function actionIndex()
-    {
-        
-    }
+    {}
 
     /**
-     * Generates Events for Entries.
+     * Generates Events for the specified Element type.
      * 
-     * @param 
+     * @var string $elementType Element type class to create Events for.
      */
-    public function actionEntries()
+    public function actionElements($elementType)
     {
+        try {
+            $seeded = Activity::getInstance()->getSeed()->createEvents(
+                $this->num,
+                $this->category,
+                $elementType,
+                $this->within,
+            );
+        } catch (\Exception $e) {
+            $this->stderr("{$e->getMessage()}\n", Console::FG_RED);
+            $this->stderr($e);
 
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout(sprintf("Seeded %d events!\n", $seeded), Console::FG_GREEN);
     }
 }

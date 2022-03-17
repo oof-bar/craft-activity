@@ -1,0 +1,49 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.selectField({
+    label: 'Event Category' | t('activity'),
+    id: 'category',
+    name: 'category',
+    value: widget.category,
+    options: widget.getCategorySuggestions() | map((s) => { label: s, value: s }),
+    errors: widget.getErrors('category'),
+    instructions: 'What do you want to visualize?' | t('activity'),
+}) }}
+
+{{ forms.selectField({
+    label: 'Interval' | t('activity'),
+    id: 'interval',
+    name: 'interval',
+    value: widget.interval,
+    options: [
+        { label: 'By Day' | t('activity'), value: 'day' },
+        { label: 'By Month' | t('activity'), value: 'month' },
+        { label: 'By Year' | t('activity'), value: 'year' },
+    ],
+    errors: widget.getErrors('interval'),
+    instructions: 'This determines the resolution of the graph, where _day_ produces the finest-grain data, and _year_ the coarsest.' | t('activity'),
+}) }}
+
+{{ forms.textField({
+    label: 'Duration' | t('activity'),
+    id: 'duration',
+    name: 'duration',
+    value: widget.duration,
+    type: 'number',
+    min: 2,
+    errors: widget.getErrors('duration'),
+    instructions: 'How many intervals do you want to visualize?' | t('activity'),
+}) }}
+
+{{ forms.selectField({
+    label: 'Aggregation Method' | t('activity'),
+    id: 'aggregationMethod',
+    name: 'aggregationMethod',
+    value: widget.aggregationMethod,
+    options: [
+        { label: 'Sum' | t('activity'), value: 'sum' },
+        { label: 'Count' | t('activity'), value: 'count' },
+    ],
+    errors: widget.getErrors('aggregationMethod'),
+    instructions: 'How you want to tally the events. “Sum” totals each interval’s `value` data, and “Count” just returns the number of events in each interval, regardless of individual events’ `value`s.' | t('activity'),
+}) }}

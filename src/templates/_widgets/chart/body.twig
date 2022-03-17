@@ -1,0 +1,32 @@
+{% set id = "chart-#{widget.id}" %}
+
+<div
+    class="chart"
+    id="{{ id }}"
+    style="height: 250px;"></div>
+
+{% js %}
+    $(function () {
+        const $chartContainer = document.getElementById('{{ id }}');
+
+        const chart = new Craft.charts.Area($chartContainer, {
+            height: 200,
+            yAxis: {
+                formatter: function(chart) {
+                    return function(d) {
+                        return chart.formatLocale.format(',.0f')(d);
+                    };
+                }
+            }
+        });
+        const data = new Craft.charts.DataTable({{ data | json_encode | raw }});
+
+        chart.draw(data, {
+            orientation: '{{ orientation }}',
+            dataScale: '{{ scale }}',
+            formats: {{ formats | json_encode | raw }},
+        });
+
+        window.dashboard.grid.on('refreshCols', chart.resize.bind(chart));
+    });
+{% endjs %}
